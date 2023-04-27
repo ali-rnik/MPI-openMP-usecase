@@ -22,7 +22,7 @@ int main()
 {
   generate_matrix(true);
 
-  for (int k = 2; k < 4; k++) {
+  for (int k = 1; k < 4; k++) {
     int cnt = 0;
     for (int i = 0; i < ROWS; i++) {
       for (int j = 0; j < COLUMNS; j++) {
@@ -64,36 +64,37 @@ int count_pal_all_dir(int pal_size, int cell_row, int cell_col) {
 
 bool check_pal_size_n_from_cell(int palindrome_size, int cell_row, int cell_col, int row_direction, int col_direction) {
   stack<char> st = {};
+  int half_size;
 
-  bool even = true;
-  if ((palindrome_size & 1) != 0)
-    even = false;
+  if ((palindrome_size&1) == 0)
+    half_size = palindrome_size / 2;
+  else
+    half_size = (palindrome_size / 2) + 1;
 
-  int half_size = palindrome_size / 2;
-
+  bool reached_mid = false;
   for (int i = 0; i < palindrome_size; i++) {
-    if (!in_border(cell_row, cell_col)) {
+    if (!in_border(cell_row, cell_col))
       return false;
-    }
 
-    if (i <= half_size) {
-      st.push(matrix[cell_row][cell_col]);
+    if (reached_mid) {
+      if (st.top() != matrix[cell_row][cell_col])
+        return false;
+      st.pop();
       cell_row += row_direction;
       cell_col += col_direction;
       continue;
     }
 
-    if (!even) {
-      st.pop();
-      even = true;
+    if (st.size() != half_size) {
+      st.push(matrix[cell_row][cell_col]);
     }
-    
-    if (st.top() != matrix[cell_row][cell_col])
-      return false;
-
+    if (st.size() == half_size) {
+      reached_mid = true;
+      if ((palindrome_size&1) == 1)
+        st.pop();
+    }
     cell_row += row_direction;
-    cell_col += col_direction;   
-    st.pop();
+    cell_col += col_direction;
   }
 
   return true;
