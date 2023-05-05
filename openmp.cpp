@@ -1,6 +1,5 @@
 #include <iostream>
 #include <omp.h>
-#include <mpi.h>
 #include <queue>
 #include <stack>
 #include <string>
@@ -40,12 +39,6 @@ int degree_of_freedom_col[DEG_FREEDOM] = {
                    // up_down_right
 
 int main() {
-  MPI_Init(NULL, NULL);
-  int world_rank;
-  MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-  int world_size;
-  MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-
   generate_matrix(false);
   int processor_count = omp_get_num_procs();
   omp_set_num_threads(processor_count);
