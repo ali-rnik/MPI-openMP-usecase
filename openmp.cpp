@@ -18,10 +18,13 @@ struct Answer {
   int palindrome_size;
   double time_spent;
   int th_num;
-  bool operator<(const Answer &rhs) const {
-    if (th_num == rhs.th_num)
-      return palindrome_size > rhs.palindrome_size;
-    return th_num > rhs.th_num;
+};
+
+struct Compare {
+    bool operator() (const Answer &lhs, const Answer &rhs) {
+    if (lhs.th_num == rhs.th_num)
+      return lhs.palindrome_size > rhs.palindrome_size;
+    return lhs.th_num > rhs.th_num;
   }
 };
 
@@ -42,29 +45,24 @@ int main() {
   generate_matrix(false);
   int processor_count = omp_get_num_procs();
   omp_set_num_threads(processor_count);
-  priority_queue<struct Answer> anspq;
+  priority_queue<struct Answer, std::vector<Answer>,Compare> anspq = {};
 
   for (int t = 0; t < processor_count; t++) {
     for (int k = 1; k <= SEARCH_MAX_SIZE; k++) {
-      int cnt = 0;
       struct Answer ans;
+      ans.palindrome_size = k;
       double begin = omp_get_wtime();
-      int num_thread_saver;
+      int cnt = 0;
 #pragma omp parallel for num_threads(t + 1) reduction(+ : cnt)
       for (int i = 0; i < ROWS; i++) {
-        num_thread_saver = omp_get_num_threads();
+        ans.th_num = omp_get_num_threads();
         for (int j = 0; j < COLUMNS; j++) {
-          cnt += count_pal_all_dir(k, i, j);
+          ans.palindrome_count += count_pal_all_dir(ans.palindrome_size, i, j);
         }
       }
       double end = omp_get_wtime();
-      double time_spent = end - begin;
-
       ans.palindrome_count = cnt;
-      ans.time_spent = time_spent;
-      ans.palindrome_size = k;
-      ans.th_num = num_thread_saver;
-
+      ans.time_spent = end - begin;
       anspq.push(ans);
     }
   }
