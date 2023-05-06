@@ -47,7 +47,7 @@ int degree_of_freedom_col[DEG_FREEDOM] = {
                    // up_down_right
 
 int main() {
-  cout << "This Calculation may take up to 1 minutes and nothing printed. \n Because all outputs will returned to Master(rank0) machine and then Printed.\n" << endl;
+
 
   MPI_Init(NULL, NULL);
   int world_rank;
@@ -71,7 +71,15 @@ int main() {
                          &mpi_answer_type);
   MPI_Type_commit(&mpi_answer_type);
 
-  generate_matrix(false);
+  if (world_rank == 0) {
+    cout << "This Calculation may take up to 1 minutes and nothing printed. \n "
+        "Because all outputs will returned to Master(rank0) machine and then "
+        "Printed.\n"
+      << endl;
+    generate_matrix(false);
+  }
+
+  MPI_Bcast(matrix, ROWS*COLUMNS, MPI_CHAR, 0, MPI_COMM_WORLD);
 
   int processor_count = omp_get_num_procs();
   // Because we are allocating buffer for gathering palindromes answers we
@@ -155,7 +163,8 @@ int main() {
     }
     cout << fixed << tmp.palindrome_count << " palindromes of size "
          << tmp.palindrome_size << " found in " << tmp.time_spent
-         << " s. using " << tmp.th_num << " Thread(s) in Machine number " << tmp.machine_number << endl;
+         << " s. using " << tmp.th_num << " Thread(s) in Machine number "
+         << tmp.machine_number << endl;
     anspq.pop();
   }
 
@@ -196,12 +205,15 @@ int *create_search_size_array_and_fill(int search_max_size, int world_size) {
     }
   }
 
-  cout << "We distribute works between machines based on Palindromes search size "  << endl;
+  cout << "We distribute works between machines based on Palindromes search "
+          "size "
+       << endl;
   cout << "The number of machines: " << world_size << endl;
   cout << "The distribution map is as follow: " << endl;
 
   for (int i = 0; i < world_size; i++) {
-    cout << "In machine number " << i << ", these palindrome string size(s) will be calculated: ";
+    cout << "In machine number " << i
+         << ", these palindrome string size(s) will be calculated: ";
     for (int j = 0; j < search_max_size; j++) {
       if (gather_array[(i * search_max_size) + j] != -1) {
         cout << gather_array[(i * search_max_size) + j] << " ";
@@ -209,7 +221,10 @@ int *create_search_size_array_and_fill(int search_max_size, int world_size) {
     }
     cout << endl;
   }
-  cout << "Its normal that some machine does not get a share and that becuase\n the number of search sizes that requested is so small.\n" << endl;
+  cout << "Its normal that some machine does not get a share and that "
+          "becuase\n the number of search sizes that requested is so small.\n"
+       << "You can Set Size with changing SEARCH_MAX_SIZE in source code."
+       << endl;
 
   return gather_array;
 }
