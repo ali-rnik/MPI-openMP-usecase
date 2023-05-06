@@ -8,8 +8,8 @@
 
 using namespace std;
 
-#define ROWS 100
-#define COLUMNS 100
+#define ROWS 1000
+#define COLUMNS 1000
 #define DEG_FREEDOM 4
 #define SEARCH_MAX_SIZE 6
 
@@ -42,7 +42,7 @@ int degree_of_freedom_col[DEG_FREEDOM] = {
                    // up_down_right
 
 int main() {
-  generate_matrix(false);
+  generate_matrix(true);
   int processor_count = omp_get_num_procs();
   omp_set_num_threads(processor_count);
   priority_queue<struct Answer, std::vector<Answer>,Compare> anspq = {};
@@ -57,7 +57,7 @@ int main() {
       for (int i = 0; i < ROWS; i++) {
         ans.th_num = omp_get_num_threads();
         for (int j = 0; j < COLUMNS; j++) {
-          ans.palindrome_count += count_pal_all_dir(ans.palindrome_size, i, j);
+          cnt += count_pal_all_dir(ans.palindrome_size, i, j);
         }
       }
       double end = omp_get_wtime();

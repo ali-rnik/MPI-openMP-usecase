@@ -9,10 +9,10 @@
 
 using namespace std;
 
-#define ROWS 100
-#define COLUMNS 100
+#define ROWS 1000
+#define COLUMNS 1000
 #define DEG_FREEDOM 4
-#define SEARCH_MAX_SIZE 2
+#define SEARCH_MAX_SIZE 6
 #define MAX_ALLOWED_PROCESSORS 4
 
 struct Answer {
@@ -20,6 +20,7 @@ struct Answer {
   int palindrome_size;
   double time_spent;
   int th_num;
+  int machine_number;
 } answer;
 
 struct Compare {
@@ -53,16 +54,17 @@ int main() {
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
 
   // Create Answer datatype
-  const int nitems = 4;
-  int blocklengths[4] = {1, 1, 1, 1};
-  MPI_Datatype types[4] = {MPI_INT, MPI_INT, MPI_DOUBLE, MPI_INT};
+  const int nitems = 5;
+  int blocklengths[5] = {1, 1, 1, 1, 1};
+  MPI_Datatype types[5] = {MPI_INT, MPI_INT, MPI_DOUBLE, MPI_INT, MPI_INT};
   MPI_Datatype mpi_answer_type;
-  MPI_Aint offsets[4];
+  MPI_Aint offsets[5];
 
   offsets[0] = offsetof(Answer, palindrome_count);
   offsets[1] = offsetof(Answer, palindrome_size);
   offsets[2] = offsetof(Answer, time_spent);
   offsets[3] = offsetof(Answer, th_num);
+  offsets[4] = offsetof(Answer, machine_number);
   MPI_Type_create_struct(nitems, blocklengths, offsets, types,
                          &mpi_answer_type);
   MPI_Type_commit(&mpi_answer_type);
@@ -118,6 +120,7 @@ int main() {
       double end = omp_get_wtime();
       send_answer[ans_counter].time_spent = end - begin;
       send_answer[ans_counter].palindrome_count = cnt;
+      send_answer[ans_counter].machine_number = world_rank;
       ans_counter++;
     }
   }
@@ -129,16 +132,11 @@ int main() {
     recv_answer = (Answer *)calloc(recv_answer_array_size, sizeof(Answer));
   }
 
-  MPI_Gather(&send_answer, send_answer_array_size, mpi_answer_type, recv_answer,
+  MPI_Gather(send_answer, send_answer_array_size, mpi_answer_type, recv_answer,
              send_answer_array_size, mpi_answer_type, 0, MPI_COMM_WORLD);
 
   if (world_rank == 0) {
     for (int i = 0; i < recv_answer_array_size; i++) {
-      cout << "Palindrome Size: " << recv_answer[i].palindrome_size 
-      << "  Palindrome Count:" << recv_answer[i].palindrome_count
-      << "  thnum:" << recv_answer[i].th_num
-      << "  time_spend:" << recv_answer[i].time_spent << endl << endl;
-
       if (recv_answer[i].th_num != 0) {
         anspq.push(recv_answer[i]);
       }
@@ -155,7 +153,7 @@ int main() {
     }
     cout << fixed << tmp.palindrome_count << " palindromes of size "
          << tmp.palindrome_size << " found in " << tmp.time_spent
-         << " s. using " << tmp.th_num << " Thread(s)" << endl;
+         << " s. using " << tmp.th_num << " Thread(s) in Machine number " << tmp.machine_number << endl;
     anspq.pop();
   }
 
@@ -196,9 +194,20 @@ int *create_search_size_array_and_fill(int search_max_size, int world_size) {
     }
   }
 
-  cout << "Gather Array: number of worlds: " << world_size << endl;
-  for (int i = 0; i < gather_array_size; i++)
-    cout << gather_array[i] << endl;
+  cout << "We distribute works between machines based on Palindromes search size "  << endl;
+  cout << "The number of machines: " << world_size << endl;
+  cout << "The distribution map is as follow: " << endl;
+
+  for (int i = 0; i < world_size; i++) {
+    cout << "In machine number " << i << ", these palindrome string size(s) will be calculated: ";
+    for (int j = 0; j < search_max_size; j++) {
+      if (gather_array[(i * search_max_size) + j] != -1) {
+        cout << gather_array[(i * search_max_size) + j] << " ";
+      }
+    }
+    cout << endl;
+  }
+  cout << "Its normal that some machine does not get a share and that becuase\n the number of search sizes that requested is so small.\n" << endl;
 
   return gather_array;
 }
