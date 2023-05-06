@@ -42,7 +42,8 @@ int degree_of_freedom_col[DEG_FREEDOM] = {
                    // up_down_right
 
 int main() {
-  generate_matrix(true);
+  cout << "This Calculation may take up to 1 minutes and nothing printed. \n Because all outputs will returned to Master(rank0) machine and then Printed.\n" << endl;
+  generate_matrix(false);
   int processor_count = omp_get_num_procs();
   omp_set_num_threads(processor_count);
   priority_queue<struct Answer, std::vector<Answer>,Compare> anspq = {};

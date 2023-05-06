@@ -47,6 +47,8 @@ int degree_of_freedom_col[DEG_FREEDOM] = {
                    // up_down_right
 
 int main() {
+  cout << "This Calculation may take up to 1 minutes and nothing printed. \n Because all outputs will returned to Master(rank0) machine and then Printed.\n" << endl;
+
   MPI_Init(NULL, NULL);
   int world_rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
