@@ -1,3 +1,15 @@
+/*
+You can compile this project by running:
+
+$ make
+
+You can run the binary files with:
+
+$ ./mpi
+$ ./openmp
+$ ./openmpC
+*/
+
 #include <iostream>
 #include <mpi.h>
 #include <omp.h>
@@ -48,7 +60,6 @@ int degree_of_freedom_col[DEG_FREEDOM] = {
 
 int main() {
 
-
   MPI_Init(NULL, NULL);
   int world_rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
@@ -73,13 +84,14 @@ int main() {
 
   if (world_rank == 0) {
     cout << "This Calculation may take up to 1 minutes and nothing printed. \n "
-        "Because all outputs will returned to Master(rank0) machine and then "
-        "Printed.\n"
-      << endl;
+            "Because all outputs will returned to Master(rank0) machine and "
+            "then "
+            "Printed.\n"
+         << endl;
     generate_matrix(false);
   }
 
-  MPI_Bcast(matrix, ROWS*COLUMNS, MPI_CHAR, 0, MPI_COMM_WORLD);
+  MPI_Bcast(matrix, ROWS * COLUMNS, MPI_CHAR, 0, MPI_COMM_WORLD);
 
   int processor_count = omp_get_num_procs();
   // Because we are allocating buffer for gathering palindromes answers we

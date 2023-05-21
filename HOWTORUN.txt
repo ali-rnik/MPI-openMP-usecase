@@ -1,0 +1,12 @@
+You can compile this project by running:
+
+$ make
+
+You can run the binary files with:
+
+$ ./mpi
+$ ./openmp
+$ ./openmpC
+
+
+

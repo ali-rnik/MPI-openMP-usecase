@@ -1,3 +1,15 @@
+/*
+You can compile this project by running:
+
+$ make
+
+You can run the binary files with:
+
+$ ./mpi
+$ ./openmp
+$ ./openmpC
+*/
+
 #include <iostream>
 #include <omp.h>
 #include <queue>
@@ -21,7 +33,7 @@ struct Answer {
 };
 
 struct Compare {
-    bool operator() (const Answer &lhs, const Answer &rhs) {
+  bool operator()(const Answer &lhs, const Answer &rhs) {
     if (lhs.th_num == rhs.th_num)
       return lhs.palindrome_size > rhs.palindrome_size;
     return lhs.th_num > rhs.th_num;
@@ -42,11 +54,14 @@ int degree_of_freedom_col[DEG_FREEDOM] = {
                    // up_down_right
 
 int main() {
-  cout << "This Calculation may take up to 1 minutes and nothing printed. \n Because all outputs will returned to Master(rank0) machine and then Printed.\n" << endl;
+  cout << "This Calculation may take up to 1 minutes and nothing printed. \n "
+          "Because all outputs will returned to Master(rank0) machine and then "
+          "Printed.\n"
+       << endl;
   generate_matrix(false);
   int processor_count = omp_get_num_procs();
   omp_set_num_threads(processor_count);
-  priority_queue<struct Answer, std::vector<Answer>,Compare> anspq = {};
+  priority_queue<struct Answer, std::vector<Answer>, Compare> anspq = {};
 
   for (int t = 0; t < processor_count; t++) {
     for (int k = 1; k <= SEARCH_MAX_SIZE; k++) {
