@@ -26,6 +26,6 @@ MPI sample Run:
     
 OpenMP sample Run:  
     
-![OpenMP_sample-run](OpenMP_sample-run.png)
+![OpenMP_sample-run](OpenMP-sample-run.png)
     
 
